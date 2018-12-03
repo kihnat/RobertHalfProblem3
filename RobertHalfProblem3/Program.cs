@@ -128,8 +128,9 @@ namespace RobertHalfProblem3
         private static void SolvePuzzleWithBruteForce(List<SquareOptions> puzzle)
         {
             var unfilledSpaces = puzzle.Where(x => x.Value == ".");
-            foreach(var space in unfilledSpaces)
+            foreach (var space in unfilledSpaces)
             {
+                bool goodGuessFound = false;
                 foreach (var option in space.Options)
                 {
                     var guessResult = MakeGuess(option, space.XCoordinate, space.YCoordinate, puzzle);
@@ -138,17 +139,19 @@ namespace RobertHalfProblem3
                     {
                         space.Value = option;
                         space.Options = new List<string> { option };
-
+                        goodGuessFound = true;
                         break;
                     }
                 }
+                if (goodGuessFound)
+                { break; }
             }
 
             SolvePuzzleLogically(puzzle);
 
             unfilledSpaces = puzzle.Where(x => x.Value == ".");
 
-            if (unfilledSpaces.Count() > 0 )
+            if (unfilledSpaces.Count() > 0)
             {
                 SolvePuzzleWithBruteForce(puzzle);
             }
