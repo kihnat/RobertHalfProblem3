@@ -48,5 +48,14 @@ namespace RobertHalfProblem3
                 this.BoxNumber = z;
             }
         }
+
+        public SquareOptions(SquareOptions input)
+        {
+            this.Options = input.Options;
+            this.Value = input.Value;
+            this.XCoordinate = input.XCoordinate;
+            this.YCoordinate = input.YCoordinate;
+            this.BoxNumber = input.BoxNumber;
+        }
     }
 }

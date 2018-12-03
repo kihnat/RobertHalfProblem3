@@ -31,14 +31,14 @@ namespace RobertHalfProblem3
 
         private static void SolvePuzzle(List<List<string>> input)
         {
-            var optionsList = ConvertToSquareOptions(input);
-            var puzzle = SolvePuzzleLogically(optionsList);
+            var puzzle = ConvertToSquareOptions(input);
+            SolvePuzzleLogically(puzzle);
 
 
             var unsolvedSquares = puzzle.Where(x => x.Value == ".").Count();
             if (unsolvedSquares != 0)
             {
-                puzzle = SolvePuzzleWithBruteForce(puzzle);
+                SolvePuzzleWithBruteForce(puzzle);
 
                 unsolvedSquares = puzzle.Where(x => x.Value == ".").Count();
                 if (unsolvedSquares != 0)
@@ -59,9 +59,8 @@ namespace RobertHalfProblem3
 
         }
 
-        private static List<SquareOptions> SolvePuzzleLogically(List<SquareOptions> optionsList)
+        private static void SolvePuzzleLogically(List<SquareOptions> ret)
         {
-            var ret = optionsList;
             bool progressBeingMade = true;
 
             while (progressBeingMade)
@@ -124,25 +123,71 @@ namespace RobertHalfProblem3
                     progressBeingMade = true;
                 }
             }
-            return ret;
-
         }
 
-        private static List<SquareOptions> SolvePuzzleWithBruteForce(List<SquareOptions> puzzle)
+        private static void SolvePuzzleWithBruteForce(List<SquareOptions> puzzle)
         {
-            //Make a list of guesses.  That's empty cells paired with a valid option from their options list
+            var unfilledSpaces = puzzle.Where(x => x.Value == ".");
+            foreach(var space in unfilledSpaces)
+            {
+                foreach (var option in space.Options)
+                {
+                    var guessResult = MakeGuess(option, space.XCoordinate, space.YCoordinate, puzzle);
 
-            //Pick a guess.  Make that guess.
+                    if (guessResult)
+                    {
+                        space.Value = option;
+                        space.Options = new List<string> { option };
 
-            //Run that guess through the logic.
+                        break;
+                    }
+                }
+            }
 
-            //Either it will fill in the bord completely or it won't. 
+            SolvePuzzleLogically(puzzle);
 
-            //Check the answer. 
+            unfilledSpaces = puzzle.Where(x => x.Value == ".");
 
-            //If it is incomplete, hop down another level and make another guess
-            bool isCorrect = CheckBoardState(puzzle);
-            return puzzle;
+            if (unfilledSpaces.Count() > 0 )
+            {
+                SolvePuzzleWithBruteForce(puzzle);
+            }
+        }
+
+        private static bool MakeGuess(string value, int x, int y, List<SquareOptions> inputPuzzle)
+        {
+            var workingpuzzle = inputPuzzle.Select(l => new SquareOptions(l)).ToList();
+            var guessPiece = workingpuzzle.Where(l => l.XCoordinate == x && l.YCoordinate == y).First();
+            guessPiece.Value = value;
+
+            SolvePuzzleLogically(workingpuzzle);
+
+            if (!CheckBoardState(workingpuzzle))
+            {
+                return false;
+            }
+
+            var unfilledSpaces = workingpuzzle.Where(l => l.Value == ".");
+            if (unfilledSpaces.Count() == 0)
+            {
+                return true;
+            }
+            else
+            {
+                foreach (var space in unfilledSpaces)
+                {
+                    foreach (var option in space.Options)
+                    {
+                        var guessResult = MakeGuess(option, space.XCoordinate, space.YCoordinate, workingpuzzle);
+
+                        if (guessResult)
+                        {
+                            return true;
+                        }
+                    }
+                }
+                return false;
+            }
         }
 
         private static bool CheckBoardState(List<SquareOptions> puzzle)
